@@ -1,0 +1,7 @@
+[robinhood]
+username = "" #Put your value here
+password = "" #Put your value here
+mfa_code = "" #Put your value here
+
+[excel]
+fileName = "Stocks.xlsx"
