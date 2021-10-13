@@ -20,8 +20,8 @@ pip install toml
 ```
 ## Notes:
 * You can also run [createNewSheet.py] to get started.  Given credentials, it will login to your Robinhood, and create a new sheet, named the current year for the current stocks that you have.
-* If you buy a new stock, you **MUST** add it to spreadsheet.
-	* Right Click - Insert
+* If you buy a new stock, you **MUST** add it to spreadsheet. Possible feature to come
+	* Right Click - Insert Column
 
 ## To run daily update:
 1. Make sure libraries are installed.
