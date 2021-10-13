@@ -5,7 +5,7 @@ This is a repository to manage my stock spreadsheet.  I wanted to get it all aut
 * robin_stocks
 	* Documentation can be found here: 
 		1. [Robin Stocks Github](https://github.com/jmfernandes/robin_stocks) 
-		2. [Robn-Stocks.com](http://www.robin-stocks.com/en/latest/robinhood.html)
+		2. [Robin-Stocks.com](http://www.robin-stocks.com/en/latest/robinhood.html)
 * toml
 	* Documentation can be found here:
 		1. [TOML Github](https://github.com/toml-lang/toml)
