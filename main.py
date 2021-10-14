@@ -9,7 +9,6 @@ import sys
 import traceback
 
 logging.basicConfig(filename='debug.log', level=logging.INFO, format='%(message)s')
-
 boldFont = Font(bold=True)
 centerAlignment = Alignment(horizontal='center',vertical='center')
 allBorders = Border(left=Side(style="thin", color="000000"),
@@ -81,8 +80,8 @@ def loadIntoExcel(stocks):
 			except:
 				amountInvested = 0
 
-			updateCell(sheet,rowToUpdate,dateColumn+1+i,equity,None,None,allBorders,currencyFormat)
-			updateCell(sheet,rowToUpdate,firstDateColumn + 1+i,amountInvested,None,None,allBorders,currencyFormat)
+			updateCell(sheet,rowToUpdate,dateColumn+1+i,round(equity,2),None,None,allBorders,currencyFormat)
+			updateCell(sheet,rowToUpdate,firstDateColumn + 1+i,round(amountInvested,2),None,None,allBorders,currencyFormat)
 
 		workbook.save(config.get_excel_fileName())
 
@@ -115,7 +114,7 @@ if __name__ == "__main__":
 		main()
 	except Exception as e:
 		exc_type, exc_obj, exc_tb = sys.exc_info()
-        logging.info("\t\t" + str(e) + " at " + datetime.datetime.now().strftime("%m/%d/%Y %H:%M:%S:%f") )
-        logging.info("Call Stack:")
-        callStack = traceback.format_exc()  
-        logging.info( callStack + "\n\n")
+		logging.info("\t\t" + str(e) + " at " + datetime.datetime.now().strftime("%m/%d/%Y %H:%M:%S:%f"))
+		logging.info("Call Stack:")
+		callStack = traceback.format_exc()
+		logging.info( callStack + "\n\n")
