@@ -36,3 +36,10 @@ def get_excel_fileName():
 	if value is None:
 		raise Exception ("Can not parse library name from config.toml.\nconfig.toml missing value for 'fileName' key\nin the [excel] section")
 	return value
+
+def get_csv_fileName():
+	cfg = toml.load(cfgG)
+	value = cfg.get("csv",{}).get("fileName")
+	if value is None:
+		raise Exception ("Can not parse library name from config.toml.\nconfig.toml missing value for 'fileName' key\nin the [csv] section")
+	return value

@@ -1,7 +1,10 @@
 [robinhood]
-username = "" #Put your value here
-password = "" #Put your value here
-mfa_code = "" #Put your value here
+username = "" #Put your value in the quotes
+password = "" #Put your value in the quotes
+mfa_code = "" #Put your value in the quotes
 
 [excel]
 fileName = "Stocks.xlsx"
+
+[csv]
+fileName = "Stocks.csv"
