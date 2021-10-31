@@ -14,11 +14,13 @@ Also using Microsoft PowerBI now. When the [main.py](main.py) is ran, it not onl
 * openpyxl
 	* Documentation can be found here:
 		1. [readthedocs.io](https://openpyxl.readthedocs.io/en/stable/)
+* yfinance
 
 Can be installed using pip. See below:
 ```
 pip install robin_stocks
 pip install toml
+pip install yfinance
 ```
 
 ## To run daily update:

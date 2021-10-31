@@ -21,7 +21,10 @@ def archiveCSV():
 	root = getCurrentDir()
 	datetimeNow = datetime.datetime.now()
 
-	shutil.copy(root + "\\" +config.get_csv_fileName(),root + "\\archive\\"+ datetimeNow.strftime("%Y") + " " +datetimeNow.strftime("%b") +"\\CSV_backup "+ datetimeNow.strftime("%H") + datetimeNow.strftime("%M") + datetimeNow.strftime("%S") + ".csv")
+	pathToFolder = root + "\\archive\\"+ datetimeNow.strftime("%Y") + " " +datetimeNow.strftime("%b") + "\\" + datetimeNow.strftime("%Y %b %d")
+
+	shutil.copy(root + "\\" +config.get_csv_myStocksFileName(),pathToFolder + "\\Backup_" + config.get_csv_myStocksFileName() + datetimeNow.strftime("%H") + datetimeNow.strftime("%M") + datetimeNow.strftime("%S") + ".csv")
+	shutil.copy(root + "\\" +config.get_csv_marketStockDataFileName(),pathToFolder + "\\Backup_" + config.get_csv_marketStockDataFileName() + datetimeNow.strftime("%H") + datetimeNow.strftime("%M") + datetimeNow.strftime("%S") + ".csv")
 
 
 def createArchiveFolder():
@@ -33,6 +36,9 @@ def createArchiveFolder():
 
 	path = getCurrentDir() + r"\archive" + "\\" + datetimeNow.strftime("%Y") + " " +datetimeNow.strftime("%b")
 
+	createFolder(path)
+
+	path = path + "\\" + datetimeNow.strftime("%Y %b %d")
 	createFolder(path)
 
 def archiveAll():

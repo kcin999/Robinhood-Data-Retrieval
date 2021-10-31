@@ -1,32 +1,20 @@
+#Module Imports
 import datetime
 import logging
 import sys
 import traceback
-import pandas
-
+#File Imports
 import excel
-import robinhood
+import stocks
 import config
 import archive
+import updateCSV
 
 def main():
-	stocks = robinhood.getStocks()
-	excel.loadIntoExcel(stocks)
-	writeToCSV(stocks)
+	myStocks = stocks.getRobinhoodStocks()
+	excel.loadIntoExcel(myStocks)
+	updateCSV.writeToCSV(myStocks)
 	archive.archiveAll()
-
-def writeToCSV(stocks):
-	df = pandas.read_csv(config.get_csv_fileName())
-	todayString = datetime.datetime.now().strftime("%m/%d/%Y %H:%M:%S")
-	for stock in stocks:
-		stockEquity = float(stocks[stock]['equity'])
-		stockAmountInvested = stockEquity - float(stocks[stock]["equity_change"])
-		listToAdd = [todayString,stock,round(stockAmountInvested,2),round(stockEquity,2)]
-		add_series = pandas.Series(listToAdd,index = df.columns)
-
-		df = df.append(add_series,ignore_index = True)
-
-	df.to_csv(config.get_csv_fileName(),index=False)
 
 
 if __name__ == "__main__":

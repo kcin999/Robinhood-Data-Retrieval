@@ -7,4 +7,5 @@ mfa_code = "" #Put your value in the quotes
 fileName = "Stocks.xlsx"
 
 [csv]
-fileName = "Stocks.csv"
+myStocksFileName = "myStocks.csv"
+marketStockDataFileName = "stockMarketData.csv"
