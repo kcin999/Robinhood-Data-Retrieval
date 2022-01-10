@@ -10,8 +10,6 @@ def getRobinhoodStocks():
 
 	my_stocks =robin_stocks. robinhood.account.build_holdings()
 
-	temp = robin_stocks.robinhood.get_open_stock_positions()
-
 	robin_stocks.robinhood.authentication.logout()
 	return my_stocks
 

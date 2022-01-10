@@ -22,6 +22,7 @@ def updateMyStockData(stocks):
 
 		df = df.append(add_series,ignore_index = True)
 
+	df = df.sort_values(['Date','Stock'], ascending=[0,1])
 	df.to_csv(config.get_csv_myStocksFileName(),index=False)
 
 def updateMarketData():
@@ -34,7 +35,7 @@ def updateMarketData():
 		#Iterate through DF
 		for i in range(0,len(stockDF)):
 			#Finds the date that the data is for
-			dateToAdd = stockDF.index[i].strftime('%m/%d/%Y %H:%M:%S')
+			dateToAdd = stockDF.index[i].strftime('%m/%d/%Y %H:%M:00')
 			#Stock Price at close for the period
 			stockPrice = round(stockDF.values[i][3],2)
 
@@ -43,5 +44,6 @@ def updateMarketData():
 			add_series = pandas.Series(listToAdd,index = df.columns)
 			df = df.append(add_series,ignore_index = True)
 
-	df = df.drop_duplicates()
+	df = df.drop_duplicates(subset=['date','stock'],keep='last')
+	df = df.sort_values(['date','stock'],ascending=[0,1])
 	df.to_csv(config.get_csv_marketStockDataFileName(),index=False)

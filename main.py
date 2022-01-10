@@ -11,10 +11,11 @@ import archive
 import updateCSV
 
 def main():
-	myStocks = stocks.getRobinhoodStocks()
-	excel.loadIntoExcel(myStocks)
-	updateCSV.writeToCSV(myStocks)
-	archive.archiveAll()
+	if datetime.datetime.now().weekday() != 6 and datetime.datetime.now().weekday() != 5:
+		myStocks = stocks.getRobinhoodStocks()
+		excel.loadIntoExcel(myStocks)
+		updateCSV.writeToCSV(myStocks)
+		archive.archiveAll()
 
 
 if __name__ == "__main__":

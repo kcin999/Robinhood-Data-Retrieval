@@ -1,11 +1,11 @@
 #File Imports
-import robinhood
+import stocks
 import excel
 
 
 def main():
-	stocks = robinhood.getStocks()
-	excel.createSheet(stocks)
+	stockList = stocks.getRobinhoodStocks()
+	excel.createSheet(stockList)
 
 if __name__ == "__main__":
 	main()
