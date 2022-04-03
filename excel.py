@@ -1,14 +1,14 @@
 from openpyxl import Workbook,load_workbook
 from openpyxl.styles import Font, Alignment, Border,Side
-from openpyxl.formatting.rule import ColorScaleRule, FormatObject
-import logging
+from openpyxl.formatting.rule import ColorScaleRule
 import datetime
-import os
 
 import config
+import os
 
 #Global Variables
-logging.basicConfig(filename='debug.log', level=logging.INFO, format='%(message)s')
+sectionHeaders = ["Amount Invested", "Equity", "Total Return", "Total Percent Return", "Day Over Day Return", "Day Over Day Percent Change"]
+
 boldFont = Font(bold=True)
 centerAlignment = Alignment(horizontal='center',vertical='center')
 allBorders = Border(left=Side(style="thin", color="000000"),
@@ -18,208 +18,336 @@ allBorders = Border(left=Side(style="thin", color="000000"),
 currencyFormat = r'_("$"* #,##0.00_)_("$"* \(#,##0.00\)_("$"* "-"??_)_(@_)'
 percentFormat = '0.00%'
 threeColorScaleFormatting = ColorScaleRule(start_type="min",start_color='F8696B',mid_type="num",mid_value=0,mid_color="FFFFFF",end_type="max",end_color='63BE7B')
+row = 1
+column = 1
 
-
-
-def loadIntoExcel(stocks):
-	workbook = load_workbook(filename=config.get_excel_fileName())	
-	yearNumber = str(datetime.datetime.today().year)
-	sheet = workbook[yearNumber]
-
-	dateColumn,dateRow = findCellCoordinates(sheet,"Date",2)
-	totalColumn,totalRow = findCellCoordinates(sheet,"Total",2)
-
-	firstDateColumn, firstDateRow = findCellCoordinates(sheet,"Date",1)
-
-	#Get Column Headers
-	stockHeaders = []
-	for column in sheet.iter_cols(min_row=2,max_row=2,min_col=dateColumn+1,max_col=totalColumn-1):
-		for cell in column:
-			stockHeaders.append(cell.value)
-
-	#Get row that needs to be updated. 
-	rowToUpdate = 0
-	for column in sheet.iter_cols(min_row=3,min_col=dateColumn,max_col=dateColumn):
-		todayValue = datetime.date.today()
-		for cell in column:
-			cellValue = cell.value.date()
-			if(cellValue == todayValue):
-				rowToUpdate = cell.row
-				break
-			elif (cell.value.date() >= todayValue):
-				todayString = todayValue.strftime("%m/%d/%Y")
-				logging.info(f"Cannot find date {todayString} in table.  Maybe it's the weekend?")
-				rowToUpdate = -1
-				break
-		break
-
-
-	#Update row
-	#See above. rowToUpdate will be -1 if date is not found in table.
-	if rowToUpdate == -1:
-		return
-	else:
-		for i in range(0,len(stockHeaders)):
-			#If stock header cannot be found in equity, then value becomes 0
-			try:
-				equity = float(stocks[stockHeaders[i]]['equity'])
-			except:
-				equity = 0
-			try:
-				amountInvested = float(stocks[stockHeaders[i]]['equity']) - float(stocks[stockHeaders[i]]['equity_change'])
-			except:
-				amountInvested = 0
-
-			updateCell(sheet,rowToUpdate,dateColumn+1+i,round(equity,2),None,None,allBorders,currencyFormat)
-			updateCell(sheet,rowToUpdate,firstDateColumn + 1+i,round(amountInvested,2),None,None,allBorders,currencyFormat)
-
-		workbook.save(config.get_excel_fileName())
-
-#Finds the cellValue within the sheet.  
-#Checks the second row for the value
-#Can find the occurance of the value. For example, if you want to find the second time "foundME" appears in sheet, you would call findCellCorridnates(sheet,"foundME",2) 
-def findCellCoordinates(sheet,cellValue, occurance):
-	count = 0
-	for column in sheet.iter_cols(min_row=2,min_col=1,max_row=2):
-		for cell in column:
-			if cell.value == cellValue:
-				count = count + 1
-				if (count == occurance):
-					return (cell.column,cell.row)
-
-#Creates the sheet for the current year
 def createSheet(stocks):
-	sheetName = str(datetime.datetime.today().year)
+	wb,sheet = makeWorkbook()
+	createAllSections(sheet,stocks)
+	wb.save(config.get_excel_fileName())
+
+def makeWorkbook():
+	sheetName = str(datetime.datetime.today().year+1)
 	if not (os.path.exists(config.get_excel_fileName())):
 		wb = Workbook()
 		sheet = wb.active
 		sheet.title = sheetName
 	else:
-		wb = load_workbook(filename=config.get_excel_fileName())	
+		wb = load_workbook(config.get_excel_fileName())	
 		sheet = wb.create_sheet(sheetName,0)
 
-	#First Section: Amount Invested
-	columnToStart = 1
-	endOfSection = createSection(sheet,columnToStart,stocks,"Amount Invested",sheetName)
-
-	#Second Section: Equity
-	endOfSection = createSection(sheet,endOfSection+2,stocks,"Equity",sheetName)
-	#Third Section: Total Return
-	endOfSection = createSection(sheet,endOfSection+2,stocks,"Total Return",sheetName)
-	#Fourth Section: Total Percent Return
-	endOfSection = createSection(sheet,endOfSection+2,stocks,"Total Percent Return",sheetName)
-	#Fifth Section: Day Over Day Return
-	endOfSection = createSection(sheet,endOfSection+2,stocks,"Day Over Day Return",sheetName)
-	#Sixth Section: Day Over Day Percent Change
-	createSection(sheet,endOfSection+2,stocks,"Day Over Day Percent Change",sheetName)
-
-
 	wb.save(config.get_excel_fileName())
+	return wb, sheet
 
-#Creates the section with dates and returns the index of the most right column
-def createSection(sheet,columnToStart,stocks, sectionName,year):
+def createAllSections(sheet, stocks):	
+	for section in sectionHeaders:
+		createSection(sheet,section, stocks)
+
+def createSection(sheet, sectionName, stocks):
+	global row, column
 	numberOfStocks = len(stocks)
 
-	#Merged Top Bar
-	updateCell(sheet,1,columnToStart,sectionName,boldFont,centerAlignment,allBorders,None)
-	
-	sheet.merge_cells(start_row=1,start_column=columnToStart,end_row=1,end_column=columnToStart+numberOfStocks+1)
+	writeMergedHeader(sheet, sectionName, numberOfStocks)
+	row += 1
 
-	#Column Headers
+	writeStockHeaders(sheet, sectionName, stocks)
 
-	#Date Column
-	updateCell(sheet,2,columnToStart,"Date",boldFont,centerAlignment,allBorders,None)
+	column += 2
+	row = 1
 
-	#Stock Columns
-	columnToInsert = columnToStart + 1
+def writeMergedHeader(sheet, sectionName, numberOfStocks):
+	global row
+	row = 1
+	#Writes Amount Invested Merged Cell
+	updateCell(sheet, sectionName,boldFont,centerAlignment,allBorders,None)
+	sheet.merge_cells(start_row=row, start_column=column,end_row=1,end_column= column +numberOfStocks+1 )
+
+def writeStockHeaders(sheet, sectionName, stocks):
+	global column
+	#Write Column Headers such as Date, Stock, Total
+	updateCell(sheet, "Date", boldFont, centerAlignment, allBorders, None)
+	column += 1
+
 	for stock in stocks:
-		updateCell(sheet,2,columnToInsert,stock,boldFont,centerAlignment,allBorders,None)
-		columnToInsert = columnToInsert + 1
+		updateCell(sheet, stock, boldFont, centerAlignment, allBorders, None)
+		column +=1
+
+	updateCell(sheet,"Total",boldFont,centerAlignment,allBorders,None)
+
+def addDataToExcel(stocks):
+	global column
+	workbook = load_workbook(filename=config.get_excel_fileName())	
+	yearNumber = str(datetime.datetime.today().year+1)
+	sheet = workbook[yearNumber]
+
+	stocksInSheet = getStocksInSheet(sheet)
+
+	#reset's column
+	column = 1	
+	addNewStocksToSheet(sheet,stocksInSheet, stocks)
+
+	findRowToAddData(sheet)
+
+	stocksInSheet = getStocksInSheet(sheet)
+
+	addAmountInvested(sheet, stocks, stocksInSheet)
 	
-	#Total Column
-	updateCell(sheet,2,columnToInsert,"Total",boldFont,centerAlignment,allBorders,None)
+	addEquity(sheet, stocks, stocksInSheet)
 
-	#Dates
-	yearEnd = datetime.datetime(int(year),12,31)
-	dateToInsert = datetime.datetime(int(year),1,1)
-	rowToInsert = 3
-	while dateToInsert <=yearEnd:
-		if dateToInsert.weekday() != 5 and dateToInsert.weekday() !=6:
-			updateCell(sheet,rowToInsert,columnToStart,dateToInsert.date(),None,None,allBorders,None)
-			addFormulas(sheet, sectionName, columnToStart,columnToInsert, rowToInsert,stocks)
+	addFormulas(sheet,stocksInSheet)
 
-			rowToInsert = rowToInsert+1
-		dateToInsert = dateToInsert + datetime.timedelta(days=1)
+	workbook.save(config.get_excel_fileName())
 
+def findRowToAddData(sheet):
+	global row
 
-	return columnToInsert
-
-#Adds the formulas for the section
-def addFormulas(sheet, sectionName, leftBoundry, rightBoundry, rowToInsert,stocks):
-	amountInvestedStock = 2
-	#Start at first Stock (skipping date column), move over by the number of stocks, and then three more
-	equityStock = amountInvestedStock + len(stocks) + 3
-	if sectionName == "Amount Invested" or sectionName == "Equity":
-		updateCell(sheet,rowToInsert,rightBoundry,f"=SUM({numberToColumn(leftBoundry+1)}{rowToInsert}:{numberToColumn(rightBoundry-1)}{rowToInsert})",None,None,allBorders,currencyFormat)
-		return
-	elif sectionName == "Total Return":
-		for column in range(leftBoundry+1,rightBoundry+1):
-			updateCell(sheet,rowToInsert,column,f"={numberToColumn(equityStock)}{rowToInsert} - {numberToColumn(amountInvestedStock)}{rowToInsert}",None,None,allBorders,currencyFormat)
-			amountInvestedStock = amountInvestedStock + 1
-			equityStock = equityStock +1
-		
-	elif sectionName == "Total Percent Return":
-		#Skips the first row for both percent changes
-		if rowToInsert == 3:
+	for rowInExcel in sheet.iter_rows(min_row=row):
+		if rowInExcel[0].value == datetime.datetime.today().replace(hour=0,minute=0,second=0,microsecond=0):
 			return
-		for column in range(leftBoundry+1,rightBoundry+1):
-			equityStockColumn = numberToColumn(equityStock)
-			amountInvestedStockColumn = numberToColumn(amountInvestedStock)
+		row += 1
 
-			#(Equity - Invested) / Invested
-			formula = f"=({equityStockColumn}{rowToInsert}-{amountInvestedStockColumn}{rowToInsert})/ABS({amountInvestedStockColumn}{rowToInsert})"
-			updateCell(sheet,rowToInsert,column,formula,None,None,allBorders,percentFormat)
-			amountInvestedStock = amountInvestedStock + 1
-			equityStock = equityStock +1
+def addNewStocksToSheet(sheet,stocksInSheet, stocks):
+	global row, column
+	"""If there are any new stocks in the robinhood account, that have not been in the spreadsheet, this will add them
+	
+	If there are no new stocks, this will just continue return
+	"""
+	missingStocks = findMissingStocks(stocksInSheet, stocks)
+
+	for stock in missingStocks:
+		addStockToSheet(sheet, stocksInSheet,stock)
+
+	#Resets the row to 1 in order to have the correct cells merged
+	row = 1
+	column = 1
+	#Unmerges Already Merged Sections
+	mergedCells = []
+	for cellgroup in sheet.merged_cells.ranges:
+		mergedCells.append(str(cellgroup))
+
+	for range in mergedCells:
+		sheet.merged_cells.remove(range)
+
+	#Merges new section
+	for section in sectionHeaders:
+		writeMergedHeader(sheet,section, len(stocks))
+		column += 2 + len(stocks) + 1
+
+def findMissingStocks(stocksInSheet, stocks):
+	stocksAlreadyAdded = []
+
+	#Finds duplicates
+	for stock in stocks:
+		if stock in stocksInSheet:
+			stocksAlreadyAdded.append(stock)
+
+	newStocks = stocks.copy()
+	
+	for stock in stocksAlreadyAdded:
+		del newStocks[stock]
+
+	return newStocks
+
+def addStockToSheet(sheet, stocksInSheet, stock):
+	global column
+	global row
+
+	row = 2
+
+	#Amount Invested
+	column = len(stocksInSheet) + column + 1
+	sheet.insert_cols(column)
+	updateCell(sheet,stock,boldFont,centerAlignment,allBorders,None)
+
+
+	#Equity
+	column = len(stocksInSheet) + column + 4
+	sheet.insert_cols(column)
+	updateCell(sheet,stock,boldFont,centerAlignment,allBorders,None)
+
+
+
+	#Equity
+	column = len(stocksInSheet) + column + 4
+	sheet.insert_cols(column)
+	updateCell(sheet,stock,boldFont,centerAlignment,allBorders,None)
+
+
+	#Total Return
+	column = len(stocksInSheet) + column + 4
+	sheet.insert_cols(column)
+	updateCell(sheet,stock,boldFont,centerAlignment,allBorders,None)
+
+
+	#Total Percent Return
+	column = len(stocksInSheet) + column + 4
+	sheet.insert_cols(column)
+	updateCell(sheet,stock,boldFont,centerAlignment,allBorders,None)
+
+
+	#Day Over Day Return
+	column = len(stocksInSheet) + column + 4
+	sheet.insert_cols(column)
+	updateCell(sheet,stock,boldFont,centerAlignment,allBorders,None)
+
+	
+	#Day Over Day Percent Change
+	column = len(stocksInSheet) + column + 4
+	sheet.insert_cols(column)
+	updateCell(sheet,stock,boldFont,centerAlignment,allBorders,None)
+
+
+#Gets the list of stocks that are already in the sheet
+def getStocksInSheet(sheet):
+	rowOfHeaders = 2
+	stockList = []
+	columnToCheck = 1
+
+	while columnToCheck != -1:
+		cellValue = sheet.cell(rowOfHeaders,columnToCheck).value
+		columnToCheck += 1
+		if cellValue == "Date":
+			pass
+		elif cellValue == "Total":
+			columnToCheck = -1
+		else:
+			stockList.append(cellValue)
+
+	return stockList
+
+def addAmountInvested(sheet, stocks, stocksInSheet):
+	global column, row
+
+	column = 1
+	dateColumnIndex = 1
+
+	#Adds date
+	updateCell(sheet, datetime.date.today(),None,None,allBorders,None)
+
+	#Adds Amount Invested	
+	for stock in stocks:
+		column = dateColumnIndex + stocksInSheet.index(stock) + 1
+
+		try:
+			amountInvested = float(stocks[stock]['equity']) - float(stocks[stock]['equity_change'])
+		except:
+			amountInvested = 0
+		updateCell(sheet, amountInvested, None, None, allBorders, currencyFormat)
+
+	#Writes Summation for total column
+	column += 1
+	updateCell(sheet,f"=SUM({numberToColumn(dateColumnIndex + 1)}{row}:{numberToColumn(dateColumnIndex + len(stocksInSheet))}{row})",None,None,allBorders,currencyFormat)
+
+def addEquity(sheet,stocks,stocksInSheet):
+	global column
+
+	#Column Offset for the next category
+	column += 2 
+	dateColumnIndex = column
+
+	#Adds date
+	updateCell(sheet, datetime.date.today(),None,None,allBorders,None)
+
+	#Adds Amount Invested	
+	for stock in stocks:
+		column = dateColumnIndex + stocksInSheet.index(stock) + 1
+
+		try:
+			equity = float(stocks[stock]['equity'])
+		except:
+			equity = 0
+
+		updateCell(sheet, equity, None, None, allBorders, currencyFormat)
+
+	#Writes Summation for total column
+	column += 1
+	updateCell(sheet,f"=SUM({numberToColumn(dateColumnIndex + 1)}{row}:{numberToColumn(dateColumnIndex + len(stocksInSheet))}{row})",None,None,allBorders,currencyFormat)
+
+def addFormulas(sheet,stocksInSheet):
+	addTotalReturnFormulas(sheet,stocksInSheet)
+	addTotalPercentReturnFormulas(sheet,stocksInSheet)
+	addDayOverDayReturnFormulas(sheet,stocksInSheet)
+	addDayOverDayPercentReturnFormulas(sheet,stocksInSheet)
+
+def addTotalReturnFormulas(sheet,stocksInSheet):
+	global column
+	column += 2
+	dateColumnIndex = column
+
+	updateCell(sheet, datetime.date.today(),None,None,allBorders,None)
+
+	#Plus 1 is to grab the total column
+	for i in range(0, len(stocksInSheet)+1):
+		column = dateColumnIndex + i + 1
+
+		amountInvestedColumn = numberToColumn(i+ 2)
+		equityColumn = numberToColumn(len(stocksInSheet) + i +5)
+		formula = f"={equityColumn}{row} - {amountInvestedColumn}{row}"
 		
-	elif sectionName == "Day Over Day Return":
-		#Skips the first row for both percent changes
-		if rowToInsert == 3:
-			return
-		for column in range(leftBoundry+1,rightBoundry+1):
-			equityStockColumn = numberToColumn(equityStock)
-			amountInvestedStockColumn = numberToColumn(amountInvestedStock)
+		updateCell(sheet, formula, None,None, allBorders, currencyFormat)
+		
+	#Adds three color scale formatting
+	sheet.conditional_formatting.add(f'{numberToColumn(dateColumnIndex + 1)}{row}:{numberToColumn(column-1)}{row}',threeColorScaleFormatting)
 
-			#(Equity - Invested) / Invested
-			formula = f"={equityStockColumn}{rowToInsert}-{equityStockColumn}{rowToInsert-1}"
-			updateCell(sheet,rowToInsert,column,formula,None,None,allBorders,currencyFormat)
-			amountInvestedStock = amountInvestedStock + 1
-			equityStock = equityStock +1
-	elif sectionName == "Day Over Day Percent Change":
-		for column in range(leftBoundry+1,rightBoundry+1):
-			equityStockColumn = numberToColumn(equityStock)
-			amountInvestedStockColumn = numberToColumn(amountInvestedStock)
+def addTotalPercentReturnFormulas(sheet,stocksInSheet):
+	global column
+	column += 2
+	dateColumnIndex = column
 
-			#(Equity - Invested) / Invested
-			formula = f"=({equityStockColumn}{rowToInsert}-{equityStockColumn}{rowToInsert-1})/ABS({equityStockColumn}{rowToInsert-1})"
-			updateCell(sheet,rowToInsert,column,formula,None,None,allBorders,percentFormat)
-			amountInvestedStock = amountInvestedStock + 1
-			equityStock = equityStock +1
-	#Conditional Formatting
-	sheet.conditional_formatting.add(f'{numberToColumn(leftBoundry+1)}{rowToInsert}:{numberToColumn(column-1)}{rowToInsert}',threeColorScaleFormatting)
+	updateCell(sheet, datetime.date.today(),None,None,allBorders,None)
 
-#Found this solution here: https://stackoverflow.com/questions/23861680/convert-spreadsheet-number-to-column-letter
-def numberToColumn(n):
-    string = ""
-    while n > 0:
-        n, remainder = divmod(n - 1, 26)
-        string = chr(65 + remainder) + string
-    return string
+	#Plus 1 is to grab the total column
+	for i in range(0, len(stocksInSheet)+1):
+		column = dateColumnIndex + i + 1
 
+		amountInvestedColumn = numberToColumn(i+ 2)
+		equityColumn = numberToColumn(len(stocksInSheet) + i +5)
+		formula = f"=({equityColumn}{row} - {amountInvestedColumn}{row})/ABS({amountInvestedColumn}{row})"
+		
+		updateCell(sheet, formula, None,None, allBorders, percentFormat)
 
+	#Adds three color scale formatting
+	sheet.conditional_formatting.add(f'{numberToColumn(dateColumnIndex + 1)}{row}:{numberToColumn(column-1)}{row}',threeColorScaleFormatting)
 
+def addDayOverDayReturnFormulas(sheet,stocksInSheet):
+	global column
+	column += 2
+	dateColumnIndex = column
 
-def updateCell(sheet,row,column,value,font,alignment,border,number_format):
+	updateCell(sheet, datetime.date.today(),None,None,allBorders,None)
+
+	#Plus 1 is to grab the total column
+	for i in range(0, len(stocksInSheet)+1):
+		column = dateColumnIndex + i + 1
+
+		equityColumn = numberToColumn(len(stocksInSheet) + i +5)
+		formula = f"={equityColumn}{row} - {equityColumn}{row-1}"
+		
+		updateCell(sheet, formula, None,None, allBorders, currencyFormat)
+
+	#Adds three color scale formatting
+	sheet.conditional_formatting.add(f'{numberToColumn(dateColumnIndex + 1)}{row}:{numberToColumn(column-1)}{row}',threeColorScaleFormatting)
+
+def addDayOverDayPercentReturnFormulas(sheet,stocksInSheet):
+	global column
+	column += 2
+	dateColumnIndex = column
+
+	updateCell(sheet, datetime.date.today(),None,None,allBorders,None)
+
+	#Plus 1 is to grab the total column
+	for i in range(0, len(stocksInSheet)+1):
+		column = dateColumnIndex + i + 1
+
+		equityColumn = numberToColumn(len(stocksInSheet) + i +5)
+		formula = f"=({equityColumn}{row} - {equityColumn}{row-1})/ABS({equityColumn}{row-1})"
+		
+		updateCell(sheet, formula, None,None, allBorders, percentFormat)
+
+	#Adds three color scale formatting
+	sheet.conditional_formatting.add(f'{numberToColumn(dateColumnIndex + 1)}{row}:{numberToColumn(column-1)}{row}',threeColorScaleFormatting)
+
+def updateCell(sheet,value,font,alignment,border,number_format):
 	cellToChange = sheet.cell(row,column)
 
 	if number_format != None:
@@ -229,3 +357,11 @@ def updateCell(sheet,row,column,value,font,alignment,border,number_format):
 	cellToChange.alignment = alignment
 	cellToChange.border = border
 	cellToChange.value = value
+
+#Found this solution here: https://stackoverflow.com/questions/23861680/convert-spreadsheet-number-to-column-letter
+def numberToColumn(n):
+    string = ""
+    while n > 0:
+        n, remainder = divmod(n - 1, 26)
+        string = chr(65 + remainder) + string
+    return string

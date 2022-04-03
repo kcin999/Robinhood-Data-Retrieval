@@ -13,7 +13,7 @@ import updateCSV
 def main():
 	if datetime.datetime.now().weekday() != 6 and datetime.datetime.now().weekday() != 5:
 		myStocks = stocks.getRobinhoodStocks()
-		excel.loadIntoExcel(myStocks)
+		excel.addDataToExcel(myStocks)
 		updateCSV.writeToCSV(myStocks)
 		archive.archiveAll()
 

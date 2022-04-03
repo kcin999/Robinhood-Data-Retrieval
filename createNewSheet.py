@@ -2,7 +2,6 @@
 import stocks
 import excel
 
-
 def main():
 	stockList = stocks.getRobinhoodStocks()
 	excel.createSheet(stockList)

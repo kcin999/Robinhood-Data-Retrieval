@@ -36,12 +36,10 @@ pip install yfinance
 2. Update the config.toml file contain the correct information. 
 	* Information can be found on how to get your mfa_code here [Robin_Stocks Github] (https://github.com/jmfernandes/robin_stocks/blob/master/Robinhood.rst#with-mfa-entered-programmatically-from-time-based-one-time-password-totp)
 3. Run [createNewSheet.py](createNewSheet.py)
-	* This will update create the spreadsheet for the current year, absed on stocks that are currently in your robinhood account.
+	* This will update create the spreadsheet for the current year, based on stocks that are currently in your robinhood account.
 
 ## Notes:
 * You can also run [createNewSheet.py] to get started.  Given credentials, it will login to your Robinhood, and create a new sheet, named the current year for the current stocks that you have.
-* If you buy a new stock, you **MUST** add it to spreadsheet. Possible Feature to come
-	* Right Click - Insert Column
 
 ## Features to come:
 1. Calucate Percentage of Portfolio that each stock takes up.
