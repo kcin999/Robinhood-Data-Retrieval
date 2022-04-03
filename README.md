@@ -35,20 +35,12 @@ pip install yfinance
 1. Make sure python and libraries are installed. 
 2. Update the config.toml file contain the correct information. 
 	* Information can be found on how to get your mfa_code here [Robin_Stocks Github] (https://github.com/jmfernandes/robin_stocks/blob/master/Robinhood.rst#with-mfa-entered-programmatically-from-time-based-one-time-password-totp)
-3. Run [createNewSheet.py](createNewSheet.py)
-	* This will update create the spreadsheet for the current year, based on stocks that are currently in your robinhood account.
-
-## Notes:
-* You can also run [createNewSheet.py] to get started.  Given credentials, it will login to your Robinhood, and create a new sheet, named the current year for the current stocks that you have.
+3. Running [main.py](main.py) will create the Excel Document as well as the Sheet if it does not exist already.
+	* Adds stocks that already existing in your robinhood account
+	* On the start of a new year, a new sheet will also be created
 
 ## Features to come:
-1. Calucate Percentage of Portfolio that each stock takes up.
-2. If new stocks are added, update the spreadsheet to reflect this.
-	* Notes for Development of this: This could be tricky, as I want to keep data above as well, but also need formulas
-		* Maybe use this: https://stackoverflow.com/questions/15826305/insert-column-using-openpyxl 
-			* sheet.insert_cols(columnNumberToInsertBefore)
-3. **This is a maybe.** Add formulas to the row each day rather than at the beginning?
-	* This would be to avoid any unwanted DIV by 0 formulas and color formatting and calculations needed before hand
+1. Calculate Percentage of Portfolio that each stock takes up.
 
 ### Written by:
 [Nick Bierman](https://github.com/kcin999)

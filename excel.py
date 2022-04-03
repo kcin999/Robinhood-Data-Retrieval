@@ -20,24 +20,20 @@ percentFormat = '0.00%'
 threeColorScaleFormatting = ColorScaleRule(start_type="min",start_color='F8696B',mid_type="num",mid_value=0,mid_color="FFFFFF",end_type="max",end_color='63BE7B')
 row = 1
 column = 1
+sheetName = str(datetime.datetime.today().year)
 
-def createSheet(stocks):
-	wb,sheet = makeWorkbook()
+def createWorkbook():
+	wb = Workbook()
+
+	wb.save(config.get_excel_fileName())
+	return wb
+
+def createSheet(workbook, stocks):
+	sheet = workbook.create_sheet(sheetName,0)
+
 	createAllSections(sheet,stocks)
-	wb.save(config.get_excel_fileName())
 
-def makeWorkbook():
-	sheetName = str(datetime.datetime.today().year+1)
-	if not (os.path.exists(config.get_excel_fileName())):
-		wb = Workbook()
-		sheet = wb.active
-		sheet.title = sheetName
-	else:
-		wb = load_workbook(config.get_excel_fileName())	
-		sheet = wb.create_sheet(sheetName,0)
-
-	wb.save(config.get_excel_fileName())
-	return wb, sheet
+	workbook.save(config.get_excel_fileName())
 
 def createAllSections(sheet, stocks):	
 	for section in sectionHeaders:
@@ -74,11 +70,25 @@ def writeStockHeaders(sheet, sectionName, stocks):
 
 	updateCell(sheet,"Total",boldFont,centerAlignment,allBorders,None)
 
+def getWorkbook(stocks):
+	if not (os.path.exists(config.get_excel_fileName())):
+		wb = createWorkbook()
+	else:
+		wb = load_workbook(config.get_excel_fileName())
+
+	
+	if sheetName not in wb.sheetnames:
+		createSheet(wb, stocks)
+	
+	return load_workbook(filename=config.get_excel_fileName())
+
 def addDataToExcel(stocks):
 	global column
-	workbook = load_workbook(filename=config.get_excel_fileName())	
-	yearNumber = str(datetime.datetime.today().year+1)
-	sheet = workbook[yearNumber]
+	
+
+	workbook = getWorkbook(stocks)	
+
+	sheet = workbook[sheetName]
 
 	stocksInSheet = getStocksInSheet(sheet)
 
