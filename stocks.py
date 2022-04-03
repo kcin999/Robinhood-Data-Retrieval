@@ -1,7 +1,9 @@
+#Module Imports
 import robin_stocks 
 import pyotp
 import yfinance
 
+#File Imports
 import config
 
 def getRobinhoodStocks():

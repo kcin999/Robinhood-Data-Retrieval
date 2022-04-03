@@ -1,7 +1,9 @@
+#Module Imports
 import os
 import shutil
 import datetime
 
+#File Imports
 import config
 
 def getCurrentDir():
@@ -25,7 +27,6 @@ def archiveCSV():
 
 	shutil.copy(root + "\\" +config.get_csv_myStocksFileName(),pathToFolder + "\\Backup_" + config.get_csv_myStocksFileName() + datetimeNow.strftime("%H") + datetimeNow.strftime("%M") + datetimeNow.strftime("%S") + ".csv")
 	shutil.copy(root + "\\" +config.get_csv_marketStockDataFileName(),pathToFolder + "\\Backup_" + config.get_csv_marketStockDataFileName() + datetimeNow.strftime("%H") + datetimeNow.strftime("%M") + datetimeNow.strftime("%S") + ".csv")
-
 
 def createArchiveFolder():
 	datetimeNow = datetime.datetime.now()

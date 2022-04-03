@@ -3,10 +3,10 @@ import datetime
 import logging
 import sys
 import traceback
+
 #File Imports
 import excel
 import stocks
-import config
 import archive
 import updateCSV
 
@@ -16,7 +16,6 @@ def main():
 		excel.addDataToExcel(myStocks)
 		updateCSV.writeToCSV(myStocks)
 		archive.archiveAll()
-
 
 if __name__ == "__main__":
 	try:

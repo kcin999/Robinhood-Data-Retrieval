@@ -1,10 +1,12 @@
+#Module Imports
 from openpyxl import Workbook,load_workbook
 from openpyxl.styles import Font, Alignment, Border,Side
 from openpyxl.formatting.rule import ColorScaleRule
 import datetime
-
-import config
 import os
+
+#File Imports
+import config
 
 #Global Variables
 sectionHeaders = ["Amount Invested", "Equity", "Total Return", "Total Percent Return", "Day Over Day Return", "Day Over Day Percent Change"]
@@ -205,7 +207,6 @@ def addStockToSheet(sheet, stocksInSheet, stock):
 	column = len(stocksInSheet) + column + 4
 	sheet.insert_cols(column)
 	updateCell(sheet,stock,boldFont,centerAlignment,allBorders,None)
-
 
 #Gets the list of stocks that are already in the sheet
 def getStocksInSheet(sheet):

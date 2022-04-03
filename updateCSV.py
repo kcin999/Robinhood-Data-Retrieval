@@ -6,7 +6,6 @@ import stocks
 #File Imports
 import config
 
-
 def writeToCSV(stocks):
 	updateMyStockData(stocks)
 	updateMarketData()
