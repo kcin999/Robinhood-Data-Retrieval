@@ -10,6 +10,8 @@ import stocks
 import archive
 import updateCSV
 
+logging.basicConfig(filename='debug.log', level=logging.INFO, format='%(message)s')
+
 def main():
 	if datetime.datetime.now().weekday() != 6 and datetime.datetime.now().weekday() != 5:
 		myStocks = stocks.getRobinhoodStocks()

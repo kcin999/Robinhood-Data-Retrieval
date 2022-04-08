@@ -2,6 +2,7 @@
 from openpyxl import Workbook,load_workbook
 from openpyxl.styles import Font, Alignment, Border,Side
 from openpyxl.formatting.rule import ColorScaleRule
+from openpyxl.formatting.formatting import ConditionalFormattingList
 import datetime
 import os
 
@@ -126,24 +127,32 @@ def addNewStocksToSheet(sheet,stocksInSheet, stocks):
 	"""
 	missingStocks = findMissingStocks(stocksInSheet, stocks)
 
-	for stock in missingStocks:
-		addStockToSheet(sheet, stocksInSheet,stock)
+	if len(missingStocks) != 0:
+		#Unmerges Already Merged Sections
+		mergedRanges = list(sheet.merged_cells.ranges)
+		for entry in mergedRanges:
+			sheet.unmerge_cells(range_string=str(entry),start_row=entry.min_row, start_column=entry.min_col, end_row=entry.max_row, end_column=entry.max_col)
 
-	#Resets the row to 1 in order to have the correct cells merged
-	row = 1
-	column = 1
-	#Unmerges Already Merged Sections
-	mergedCells = []
-	for cellgroup in sheet.merged_cells.ranges:
-		mergedCells.append(str(cellgroup))
+		#Adds missing stocks
+		for stock in missingStocks:
+			column = 1
+			addStockToSheet(sheet, stocksInSheet,stock)
+			stocksInSheet.append(stock)
 
-	for range in mergedCells:
-		sheet.merged_cells.remove(range)
+		#Resets the row to 1 in order to have the correct cells merged
+		row = 1
+		column = 1
+		
+		#Merges new section header
+		for section in sectionHeaders:
+			writeMergedHeader(sheet,section, len(stocks))
+			column += 2 + len(stocks) + 1
 
-	#Merges new section
-	for section in sectionHeaders:
-		writeMergedHeader(sheet,section, len(stocks))
-		column += 2 + len(stocks) + 1
+		#Rewrites all formulas and conditional formatting with updated references. References didn't change with inserting columns
+		for i in range(3,sheet.max_row):
+			column = 1 + 2*(len(stocks) + 2)  #Reset to first column in Total Return Section
+			row = i
+			addFormulas(sheet,stocks)
 
 def findMissingStocks(stocksInSheet, stocks):
 	stocksAlreadyAdded = []

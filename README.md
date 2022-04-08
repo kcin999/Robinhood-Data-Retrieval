@@ -1,7 +1,7 @@
 # Robinhood-Data-Retrieval
 This is a repository to manage my stock spreadsheet.  I wanted to get it all automated, so that I would not have to update it each and every day manually.  
 
-Also using Microsoft PowerBI now. When the [main.py](main.py) is ran, it not only updated the excel spreadhheet
+Also using [Microsoft PowerBI](https://powerbi.microsoft.com/en-us/) now. When the [main.py](main.py) is ran, it not only updates the excel spreadsheet, it also updates the CSV's with the stock data, which I then import into [Microsoft PowerBI](https://powerbi.microsoft.com/en-us/)
 
 ## Libraries used
 * robin_stocks
@@ -42,5 +42,6 @@ pip install yfinance
 ## Features to come:
 1. Calculate Percentage of Portfolio that each stock takes up.
 
-### Written by:
-[Nick Bierman](https://github.com/kcin999)
+## Other Information:
+**Written by:** [Nick Bierman](https://github.com/kcin999)\
+**Last Updated:** 4/3/2022
