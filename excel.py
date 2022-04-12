@@ -25,6 +25,8 @@ row = 1
 column = 1
 sheetName = str(datetime.datetime.today().year)
 
+dateToAdd = datetime.date.today()
+
 def createWorkbook():
 	wb = Workbook()
 
@@ -86,7 +88,7 @@ def getWorkbook(stocks):
 	return load_workbook(filename=config.get_excel_fileName())
 
 def addDataToExcel(stocks):
-	global column
+	global column,dateToAdd
 	
 
 	workbook = getWorkbook(stocks)	
@@ -107,6 +109,7 @@ def addDataToExcel(stocks):
 	
 	addEquity(sheet, stocks, stocksInSheet)
 
+	dateToAdd = datetime.date.today()
 	addFormulas(sheet,stocksInSheet)
 
 	workbook.save(config.get_excel_fileName())
@@ -120,7 +123,7 @@ def findRowToAddData(sheet):
 		row += 1
 
 def addNewStocksToSheet(sheet,stocksInSheet, stocks):
-	global row, column
+	global row, column, dateToAdd
 	"""If there are any new stocks in the robinhood account, that have not been in the spreadsheet, this will add them
 	
 	If there are no new stocks, this will just continue return
@@ -152,6 +155,7 @@ def addNewStocksToSheet(sheet,stocksInSheet, stocks):
 		for i in range(3,sheet.max_row):
 			column = 1 + 2*(len(stocks) + 2)  #Reset to first column in Total Return Section
 			row = i
+			dateToAdd = datetime.date.today() - datetime.timedelta(days=sheet.max_row -i)
 			addFormulas(sheet,stocks)
 
 def findMissingStocks(stocksInSheet, stocks):
@@ -242,7 +246,7 @@ def addAmountInvested(sheet, stocks, stocksInSheet):
 	dateColumnIndex = 1
 
 	#Adds date
-	updateCell(sheet, datetime.date.today(),None,None,allBorders,None)
+	updateCell(sheet, dateToAdd,None,None,allBorders,None)
 
 	#Adds Amount Invested	
 	for stock in stocks:
@@ -266,7 +270,7 @@ def addEquity(sheet,stocks,stocksInSheet):
 	dateColumnIndex = column
 
 	#Adds date
-	updateCell(sheet, datetime.date.today(),None,None,allBorders,None)
+	updateCell(sheet, dateToAdd,None,None,allBorders,None)
 
 	#Adds Amount Invested	
 	for stock in stocks:
@@ -294,7 +298,7 @@ def addTotalReturnFormulas(sheet,stocksInSheet):
 	column += 2
 	dateColumnIndex = column
 
-	updateCell(sheet, datetime.date.today(),None,None,allBorders,None)
+	updateCell(sheet, dateToAdd,None,None,allBorders,None)
 
 	#Plus 1 is to grab the total column
 	for i in range(0, len(stocksInSheet)+1):
@@ -314,7 +318,7 @@ def addTotalPercentReturnFormulas(sheet,stocksInSheet):
 	column += 2
 	dateColumnIndex = column
 
-	updateCell(sheet, datetime.date.today(),None,None,allBorders,None)
+	updateCell(sheet, dateToAdd,None,None,allBorders,None)
 
 	#Plus 1 is to grab the total column
 	for i in range(0, len(stocksInSheet)+1):
@@ -334,7 +338,7 @@ def addDayOverDayReturnFormulas(sheet,stocksInSheet):
 	column += 2
 	dateColumnIndex = column
 
-	updateCell(sheet, datetime.date.today(),None,None,allBorders,None)
+	updateCell(sheet, dateToAdd,None,None,allBorders,None)
 
 	#Plus 1 is to grab the total column
 	for i in range(0, len(stocksInSheet)+1):
@@ -353,7 +357,7 @@ def addDayOverDayPercentReturnFormulas(sheet,stocksInSheet):
 	column += 2
 	dateColumnIndex = column
 
-	updateCell(sheet, datetime.date.today(),None,None,allBorders,None)
+	updateCell(sheet, dateToAdd,None,None,allBorders,None)
 
 	#Plus 1 is to grab the total column
 	for i in range(0, len(stocksInSheet)+1):
