@@ -10,7 +10,7 @@ def main():
 
 
 def get_data():
-    options, dividends = stocks.getRobinhoodTransactions()
+    options, dividends = stocks.get_robinhood_transactions()
     options = options.loc[options['state'] == 'filled']
     dividends = dividends.loc[dividends['state'] == 'paid']
 

@@ -34,7 +34,7 @@ pip install yfinance
 ## To set up for the first time:
 1. Make sure python and libraries are installed. 
 2. Update the config.toml file contain the correct information. 
-	* Information can be found on how to get your mfa_code here [Robin_Stocks Github] (https://github.com/jmfernandes/robin_stocks/blob/master/Robinhood.rst#with-mfa-entered-programmatically-from-time-based-one-time-password-totp)
+	* Information can be found on how to get your mfa_code here: [Robin_Stocks Github](https://github.com/jmfernandes/robin_stocks/blob/master/Robinhood.rst#with-mfa-entered-programmatically-from-time-based-one-time-password-totp)
 3. Running [main.py](main.py) will create the Excel Document as well as the Sheet if it does not exist already.
 	* Adds stocks that already existing in your robinhood account
 	* On the start of a new year, a new sheet will also be created
