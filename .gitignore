@@ -3,3 +3,4 @@ debug.log
 *.xlsx
 *.csv
 venv/
+*.qif

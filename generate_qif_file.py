@@ -1,5 +1,6 @@
 """Generates a QIF File which can be imported into Quicken"""
 import os
+from datetime import date
 import pandas as pd
 import stocks
 
@@ -37,9 +38,27 @@ def get_data() -> tuple[pd.DataFrame, pd.DataFrame]:
     date_input = input("Get Transaction After (yyyy-mm-dd): ")
     date_input = pd.Timestamp(date_input, tz='UTC')
 
-    options = options.loc[options['last_transaction_at'] >= date_input]
-    dividends = dividends.loc[dividends['payable_date'] >= date_input]
+    options = options.loc[options['last_transaction_at'] > date_input]
+    dividends = dividends.loc[dividends['payable_date'] > date_input]
     return options, dividends
+
+
+def get_date_input() -> pd.Timestamp:
+    """Gets the date input from the given file
+
+    :return: Timestamp
+    :rtype: pd.Timestamp
+    """
+    df = pd.read_csv('date_file.csv') 
+    df['Date'] = pd.to_datetime(df['Date'])
+    date_input = df.at[0,'Date']
+
+    date_input = pd.Timestamp(date_input, tz="UTC")
+
+    df.at[0, 'Date'] = date.today()
+    df.to_csv('date_file.csv', index=False)
+
+    return date_input
 
 
 def get_quicken_name(robinhood_name: str) -> str:
@@ -105,9 +124,9 @@ def create_qif_file(options: pd.DataFrame, dividends: pd.DataFrame):
         year = str(year)[2:]
 
         qif_lines.append(f'D{month}/{day}\'{year}')
-        if transaction['state'] == 'buy':
+        if transaction['side'] == 'buy' and transaction['state'] == 'filled':
             qif_lines.append('NBuy')
-        elif transaction['state'] == 'sell':
+        elif transaction['side'] == 'sell' and transaction['state'] == 'filled':
             qif_lines.append('NSell')
 
         # input("here:")
